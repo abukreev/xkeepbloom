@@ -1,0 +1,11 @@
+CC=gcc
+CFLAGS=-I.
+LDFLAGS=-lX11
+OBJ = main.o
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+xkeepbloom: $(OBJ)
+	gcc -o $@ $^ $(LDFLAGS)
+
