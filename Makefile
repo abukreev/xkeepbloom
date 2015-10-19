@@ -1,8 +1,7 @@
-all: xkeepbloom test
+all:
 
 xkeepbloom:
-	make -f Makefile.xkeepbloom
-
+	$(MAKE) -f Makefile.xkeepbloom
 test:
-	make -f Makefile.test
+	$(MAKE) -f Makefile.test
 
