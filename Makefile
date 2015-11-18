@@ -1,7 +1,11 @@
-all:
+CC=gcc
+CFLAGS=-I. -g -Wall
+LDFLAGS=-lX11
+OBJ = main.o
 
-xkeepbloom:
-	$(MAKE) -f Makefile.xkeepbloom
-test:
-	$(MAKE) -f Makefile.test
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+xkeepbloom: $(OBJ)
+	gcc -o $@ $^ $(LDFLAGS)
 

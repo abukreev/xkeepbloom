@@ -23,6 +23,7 @@ void LOG(const char *format, ...)
     fprintf(stderr, "%d-%d-%d %d:%d:%d ", tm.tm_year + 1900, tm.tm_mon + 1,
             tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
     fprintf(stderr, format, args);
+    fprintf(stderr, "\n");
 
     va_end(args);
 }
@@ -73,7 +74,7 @@ int findWindow(Display *display, const Window *current, Window *found) {
     int i;
     int res = 1;
 
-    LOG("Find window\n");
+    LOG("Find window");
 
     if (0 == XQueryTree(display, *current, &root, &parent, &children,
                        &nchildren)) {
@@ -98,18 +99,18 @@ void processWindow(Display* display,  Window *root, Window* window) {
     int    revert;
     XKeyEvent event;
     XGetInputFocus(display, &winFocus, &revert);
-    LOG("Window focused\n");
+    LOG("Window focused");
     event = createKeyEvent(display, window, root, 1, KEYCODE, 0);
     XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
-    LOG("KeyPress sent\n");
+    LOG("KeyPress sent");
     event = createKeyEvent(display, window, root, 0, KEYCODE, 0);
     XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
-    LOG("KeyRelease sent\n");
+    LOG("KeyRelease sent");
 }
 
 int ignoreError(Display *d, XErrorEvent *e) {
 
-//    LOG("Error ignored\n");
+//    LOG("Error ignored");
     return 0;
 }
 
@@ -130,15 +131,14 @@ int main()
         XNextEvent(display, &event);
         if (event.type == CreateNotify) {
             XCreateWindowEvent *createevent = (XCreateWindowEvent*) &event;
-//            LOG("Created:");
-//            fprintf(stderr, " 0x%08x", (int) createevent->window);
+//            LOG("Created: 0x%08x", (int) createevent->window);
             const char *p = getWindowTitle(display, &createevent->window);
 //            fprintf(stderr, " \"%s\"", p);
 //            fprintf(stderr, "\n");
             if (NULL != p) {
 //                fprintf(stderr, " strcmp(\"%s\", \"%s\") = %d\n", TITLE, p, strcmp(TITLE, p));
                 if (strcmp(TITLE, p) == 0) {
-                    LOG("Window found\n");
+                    LOG("Window found");
                     processWindow(display, &root, &createevent->window);
                 }
             }
