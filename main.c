@@ -42,55 +42,23 @@ char* getWindowTitle(Display* display,  Window* w)
 XKeyEvent createKeyEvent(Display *display, Window *window, Window *root,
                          int press, int keycode, int modifiers) {
 
-   XKeyEvent event;
+    XKeyEvent event;
 
-   event.display     = display;
-   event.window      = *window;
-   event.root        = *root;
-   event.subwindow   = None;
-   event.time        = CurrentTime;
-   event.x           = 1;
-   event.y           = 1;
-   event.x_root      = 1;
-   event.y_root      = 1;
-   event.same_screen = True;
-   event.keycode     = XKeysymToKeycode(display, keycode);
-   event.state       = modifiers;
+    event.display     = display;
+    event.window      = *window;
+    event.root        = *root;
+    event.subwindow   = None;
+    event.time        = CurrentTime;
+    event.x           = 1;
+    event.y           = 1;
+    event.x_root      = 1;
+    event.y_root      = 1;
+    event.same_screen = True;
+    event.keycode     = XKeysymToKeycode(display, keycode);
+    event.state       = modifiers;
+    event.type = press ? KeyPress : KeyRelease;
 
-   if (press)
-      event.type = KeyPress;
-   else
-      event.type = KeyRelease;
-
-   return event;
-}
-
-int findWindow(Display *display, const Window *current, Window *found) {
-
-    Window root;
-    Window parent;
-    Window *children = NULL;
-    unsigned int nchildren;
-    int i;
-    int res = 1;
-
-    LOG("Find window");
-
-    if (0 == XQueryTree(display, *current, &root, &parent, &children,
-                       &nchildren)) {
-        return 1;
-    }
-
-    for (i = 0; i < nchildren; ++i) {
-        if (0 == findWindow(display, &children[i], found)) {
-            res = 0;
-            break;
-        }
-    }
-
-    XFree(children);
-
-    return res;
+    return event;
 }
 
 void processWindow(Display* display,  Window *root, Window* window) {
@@ -131,12 +99,8 @@ int main()
         XNextEvent(display, &event);
         if (event.type == CreateNotify) {
             XCreateWindowEvent *createevent = (XCreateWindowEvent*) &event;
-//            LOG("Created: 0x%08x", (int) createevent->window);
             const char *p = getWindowTitle(display, &createevent->window);
-//            fprintf(stderr, " \"%s\"", p);
-//            fprintf(stderr, "\n");
             if (NULL != p) {
-//                fprintf(stderr, " strcmp(\"%s\", \"%s\") = %d\n", TITLE, p, strcmp(TITLE, p));
                 if (strcmp(TITLE, p) == 0) {
                     LOG("Window found");
                     processWindow(display, &root, &createevent->window);
