@@ -1,9 +1,10 @@
 CC=gcc
 CFLAGS=-I. -g -Wall
 LDFLAGS=-lX11
-OBJ = main.o
+SOURCES=main.c args.c
+OBJ=main.o args.o
 
-%.o: %.c $(DEPS)
+%.o: %.c $(SOURCES)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 xkeepbloom: $(OBJ)
