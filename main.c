@@ -1,5 +1,3 @@
-#include <args.h>
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -8,7 +6,6 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -43,7 +40,7 @@ char* getWindowTitle(Display* display,  Window* w)
 
 // Function to create a keyboard event
 XKeyEvent createKeyEvent(Display *display, Window *window, Window *root,
-                         int press, int keycode) {
+                         int press, int keycode, int modifiers) {
 
     XKeyEvent event;
 
@@ -58,7 +55,7 @@ XKeyEvent createKeyEvent(Display *display, Window *window, Window *root,
     event.y_root      = 1;
     event.same_screen = True;
     event.keycode     = XKeysymToKeycode(display, keycode);
-    event.state       = 0;
+    event.state       = modifiers;
     event.type = press ? KeyPress : KeyRelease;
 
     return event;
@@ -71,10 +68,10 @@ void processWindow(Display* display,  Window *root, Window* window) {
     XKeyEvent event;
     XGetInputFocus(display, &winFocus, &revert);
     LOG("Window focused");
-    event = createKeyEvent(display, window, root, 1, KEYCODE);
+    event = createKeyEvent(display, window, root, 1, KEYCODE, 0);
     XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
     LOG("KeyPress sent");
-    event = createKeyEvent(display, window, root, 0, KEYCODE);
+    event = createKeyEvent(display, window, root, 0, KEYCODE, 0);
     XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
     LOG("KeyRelease sent");
 }
@@ -85,47 +82,10 @@ int ignoreError(Display *d, XErrorEvent *e) {
     return 0;
 }
 
-time_t today_time() {
-
-    time_t cur_time;
-    struct tm*  midnight_time_tm;
-
-    cur_time = time(NULL);
-    midnight_time_tm = localtime(&cur_time);
-    midnight_time_tm->tm_sec = 0;
-    midnight_time_tm->tm_min = 0;
-    midnight_time_tm->tm_hour = 0;
-
-    return cur_time - mktime(midnight_time_tm);
-}
-
-void print_time(FILE* stream, time_t time_value) {
-
-    char buf[6];
-    struct tm* tm_info;
-
-    tm_info = gmtime(&time_value);
-
-    strftime(buf, sizeof(buf), "%H:%M", tm_info);
-    fprintf(stream, "%s", buf);
-}
-
-int main(int argc, char* argv[])
+int main()
 {
     Display *display;
     Window root;
-
-    time_t cur_time;
-    int sleep_period = 0;
-    struct arguments args = { 0 };
-
-    if (parse_arguments(argc, argv, &args)) {
-        return EXIT_FAILURE;
-    }
-
-    if (args.help) {
-        return EXIT_SUCCESS;
-    }
 
     display = XOpenDisplay(NULL);
     root = DefaultRootWindow(display);
@@ -136,23 +96,6 @@ int main(int argc, char* argv[])
     XSetErrorHandler(ignoreError);
 
     while (1) {
-
-        if (args.min_time_present || args.max_time_present) {
-            cur_time = today_time();
-            if (args.min_time_present && cur_time < args.min_time) {
-                sleep_period = args.min_time - cur_time;
-                printf("Sleeping for %d seconds\n", sleep_period);
-                sleep(sleep_period);
-                continue;
-            }
-            if (args.max_time_present && cur_time > args.max_time) {
-                sleep_period = 86400 - cur_time + (args.min_time_present ? args.min_time : 0)
-                printf("Sleeping for %d seconds\n", sleep_period);
-                sleep(sleep_period);
-                continue;
-            }
-        }
-
         XNextEvent(display, &event);
         if (event.type == CreateNotify) {
             XCreateWindowEvent *createevent = (XCreateWindowEvent*) &event;
