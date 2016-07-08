@@ -11,6 +11,8 @@
 
 #define TITLE "Bloomberg - Session Timeout Warning"
 #define KEYCODE XK_Y
+#define TIMEOUT_USEC 500000
+#define NUM_ATTEMPTS 3
 
 void LOG(const char *format, ...)
 {
@@ -61,7 +63,7 @@ XKeyEvent createKeyEvent(Display *display, Window *window, Window *root,
     return event;
 }
 
-void processWindow(Display* display,  Window *root, Window* window) {
+void sendKeyToWindow(Display* display,  Window *root, Window* window) {
 
     Window winFocus;
     int    revert;
@@ -74,6 +76,26 @@ void processWindow(Display* display,  Window *root, Window* window) {
     event = createKeyEvent(display, window, root, 0, KEYCODE, 0);
     XSendEvent(event.display, event.window, True, KeyPressMask, (XEvent *)&event);
     LOG("KeyRelease sent");
+}
+
+void processWindow(Display* display,  Window *root, Window* window) {
+    int i;
+    Status s;
+    XWindowAttributes wa;
+
+    for (i = 0; i < NUM_ATTEMPTS; i++) {
+        LOG("Attempt %d", i + 1);
+
+        s = XGetWindowAttributes(display, *window, &wa);
+        if (0 == s) {
+            LOG("Window DOESN'T exists");
+            break;
+        }
+
+        LOG("Window exists. Trying to send an event to it");
+        sendKeyToWindow(display, root, window);
+        usleep(TIMEOUT_USEC);
+    }
 }
 
 int ignoreError(Display *d, XErrorEvent *e) {
