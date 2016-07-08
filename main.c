@@ -82,6 +82,21 @@ int ignoreError(Display *d, XErrorEvent *e) {
     return 0;
 }
 
+int processEvent(Display *display, Window root, XEvent *event) {
+
+    if (event->type == CreateNotify) {
+        XCreateWindowEvent *createevent = (XCreateWindowEvent*) event;
+        const char *p = getWindowTitle(display, &createevent->window);
+        if (NULL != p) {
+            if (strcmp(TITLE, p) == 0) {
+                LOG("Window found");
+                processWindow(display, &root, &createevent->window);
+            }
+        }
+    }
+    return 0;
+}
+
 int main()
 {
     Display *display;
@@ -97,16 +112,7 @@ int main()
 
     while (1) {
         XNextEvent(display, &event);
-        if (event.type == CreateNotify) {
-            XCreateWindowEvent *createevent = (XCreateWindowEvent*) &event;
-            const char *p = getWindowTitle(display, &createevent->window);
-            if (NULL != p) {
-                if (strcmp(TITLE, p) == 0) {
-                    LOG("Window found");
-                    processWindow(display, &root, &createevent->window);
-                }
-            }
-        }
+        processEvent(display, root, &event);
     }
 
     return 0;
