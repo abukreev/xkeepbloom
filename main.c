@@ -24,7 +24,7 @@ void LOG(const char *format, ...)
 
     fprintf(stderr, "%d-%02d-%02d %02d:%02d:%02d ", tm.tm_year + 1900,
             tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-    fprintf(stderr, format, args);
+    vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
 
     va_end(args);
