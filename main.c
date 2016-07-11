@@ -86,7 +86,7 @@ void processWindow(Display* display,  Window *root, Window* window) {
 
         s = XGetWindowAttributes(display, *window, &wa);
         if (0 == s) {
-            LOG("Window DOESN'T exists");
+            LOG("Window DOESN'T exist");
             break;
         }
 
