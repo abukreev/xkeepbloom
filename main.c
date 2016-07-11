@@ -7,8 +7,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-
 #define TITLE "Bloomberg - Session Timeout Warning"
 #define KEYCODE XK_Y
 #define TIMEOUT_USEC 500000
